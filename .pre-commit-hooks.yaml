@@ -1,0 +1,7 @@
+- id: print-commit
+  name: print-commit
+  description: print commit log
+  entry: print-commits
+  language: python
+  language_version: python3
+  files: \.md$
