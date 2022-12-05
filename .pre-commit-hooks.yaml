@@ -1,5 +1,5 @@
-- id: print-commit
-  name: print-commit
+- id: print-commits
+  name: print-commits
   description: print commit log
   entry: print-commits
   language: python
