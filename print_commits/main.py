@@ -2,6 +2,15 @@ import sys
 import re
 import datetime
 import requests
+from functools import reduce
+
+
+def commits_by_repo(acc, cur):
+    repo = cur["repo"]["name"]
+    if repo not in acc:
+        acc[repo] = []
+    acc[repo].append(*cur["payload"]["commits"])
+    return acc
 
 
 def get_today_commits(username, title):
@@ -16,20 +25,15 @@ def get_today_commits(username, title):
         today = datetime.datetime.now().strftime("%Y-%m-%d")
         today_activity = list(filter(lambda d: d["created_at"].split("T")[0] == today, push_events))
 
-        for activity in today_activity:
-            repo_name = activity["repo"]["name"]
-            commits = activity["payload"]["commits"]
-            commits_count = len(commits)
-            today_commits.append(
-                f"- [{repo_name}](https://github.com/{repo_name}) {commits_count} commits"
-            )
+        repos = reduce(commits_by_repo, today_activity, {})
 
-            for commit in commits:
+        for repo in repos.keys():
+            commits_count = len(repos[repo])
+            today_commits.append(f"- [{repo}](https://github.com/{repo}) {commits_count} commits")
+            for commit in repos[repo]:
                 sha = commit["sha"]
                 message = commit["message"].split("\n")[0]
-                today_commits.append(
-                    f"  - [{message}](https://github.com/{repo_name}/commit/{sha})"
-                )
+                today_commits.append(f"  - [{message}](https://github.com/{repo}/commit/{sha})")
 
     return "\n".join(today_commits)
 
