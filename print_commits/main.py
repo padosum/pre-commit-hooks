@@ -9,7 +9,7 @@ def commits_by_repo(acc, cur):
     repo = cur["repo"]["name"]
     if repo not in acc:
         acc[repo] = []
-    acc[repo].append(*cur["payload"]["commits"])
+    acc[repo].extend(cur["payload"]["commits"])
     return acc
 
 
