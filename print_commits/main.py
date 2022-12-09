@@ -2,6 +2,8 @@ import sys
 import re
 import datetime
 import requests
+import dateutil.parser
+from tzlocal import get_localzone
 from functools import reduce
 
 
@@ -13,6 +15,14 @@ def commits_by_repo(acc, cur):
     return acc
 
 
+def today_event(event):
+    LOCAL_ZONE = get_localzone()
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+
+    event_created = event["created_at"]
+    return dateutil.parser.parse(event_created).astimezone(LOCAL_ZONE).strftime("%Y-%m-%d") == today
+
+
 def get_today_commits(username, title):
     today_commits = []
     today_commits.append(title)
@@ -22,8 +32,7 @@ def get_today_commits(username, title):
     if response.status_code == 200:
         github_activity = response.json()
         push_events = list(filter(lambda d: d["type"] == "PushEvent", github_activity))
-        today = datetime.datetime.now().strftime("%Y-%m-%d")
-        today_activity = list(filter(lambda d: d["created_at"].split("T")[0] == today, push_events))
+        today_activity = list(filter(today_event, push_events))
 
         repos = reduce(commits_by_repo, today_activity, {})
 
